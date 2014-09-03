@@ -1,0 +1,4 @@
+{
+    "db_driver": "sqlite3",
+    "db_connection_string": "data/meters.db"
+}

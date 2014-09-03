@@ -1,0 +1,77 @@
+{% extends "layout.html" %}
+{% set active_page = active_page|default('meters') -%}
+{% block title %}Solstice - Meter {{meterId}}{% endblock %}
+{% block container %}
+
+<div class="row">
+  <div class="col-md-2">
+  
+      <script>
+      $('#my-affix').affix({
+        offset: {
+          top: 100
+        , bottom: function () {
+            return (this.bottom = $('.footer').outerHeight(true))
+          }
+        }
+      })
+      </script>
+      <div class="nav affix">
+            <ul class="nav nav-stacked">
+              <li><a href="#details">Details</a></li>
+              <li><a href="#location">Location</a></li>
+              <li><a href="#charts">Charts</a></li>
+              <li><a href="#readings">Readings</a></li>
+              <li><a href="#top" class="back-to-top">Back to top</a></li>
+            </ul>
+            
+      </div>
+  </div><!-- /col-md-2-->
+
+  <div class="col-md-10">
+    <h1 id="details" class="page-header">Meter Details</h1>
+    <p>Some stuff about the meter</p>
+
+    <h1 id="location" class="page-header">Location</h1>
+
+    <script src="{{ url_for('static', filename='js/leaflet.js') }}"></script>
+    <div id="map1" class="map" style="width: 600px; height: 300px"></div>
+    <script>
+        // create map object
+        var map = L.map('map1').setView([{{ location.lat }}, {{ location.lon }}], 8);
+
+        // add an OpenStreetMap tile layer
+        L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // add a marker in the given location, attach some popup content to it and open the popup
+        L.marker([{{ location.lat }},  {{ location.lon }}]).addTo(map)
+            .bindPopup('{{ location.lat }} , {{ location.lon }}')
+            .openPopup();
+    </script>
+
+
+    <h1 id="charts" class="page-header">Chart for Meter {{meterId}}</h1>
+    
+    <img src="../../charts/{{meterId}}.png" />
+    
+    <h1 id="readings" class="page-header">Last 10 Recordings for Meter {{meterId}}</h1>
+
+    <table class="table table-condensed table-striped">
+     <thead>
+        <tr>{% for cell in tableReadings.headings %}<th>{{ cell }}</th>{% endfor %}</tr>
+     </thead>
+     <tbody>
+        {% for row in tableReadings.data %}<tr>
+            {% for cell in row %}
+                <td>{{ cell }}</td>    
+            {% endfor %} 
+        </tr>
+        {% endfor %} 
+     </tbody>
+    </table>
+
+    </div>
+</div>  
+{% endblock container%}

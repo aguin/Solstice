@@ -1,0 +1,54 @@
+{% extends "layout.html" %}
+{% set active_page = active_page|default('meters') -%}
+{% block title %}Solstice - Meters{% endblock %}
+{% block container %}
+<h1 class="page-header">List of meters</h1>
+
+<table>
+<tr>
+
+</tr>
+</table>
+
+<div class="input-group"> <span class="input-group-addon">Filter</span>
+    <input id="filter" type="text" class="form-control" placeholder="Search here...">
+</div>
+<script>
+$(document).ready(function () {
+
+    (function ($) {
+
+        $('#filter').keyup(function () {
+
+            var rex = new RegExp($(this).val(), 'i');
+            $('.searchable tr').hide();
+            $('.searchable tr').filter(function () {
+                return rex.test($(this).text());
+            }).show();
+
+        })
+
+    }(jQuery));
+
+});
+</script>
+<table class="table table-condensed table-striped">
+ <thead>
+    <tr>{% for cell in tableMeterList.headings %}<th>{{ cell }}</th>{% endfor %}</tr>
+ </thead>
+ <tbody class="searchable">
+    {% for row in tableMeterList.data %}<tr>
+        {% for cell in row %}
+            {% if loop.index == 1 %}
+                <td><a href="{{ url_for('meters', meterId = cell) }}">{{ cell }}</a></td>
+
+            {% else %}             
+                <td>{{ cell }}</td>    
+            {% endif %} 
+        {% endfor %} 
+    </tr>
+    {% endfor %} 
+ </tbody>
+</table>
+
+{% endblock container%}
