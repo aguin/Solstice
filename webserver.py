@@ -1,9 +1,11 @@
-from flask import Flask, render_template, request, make_response
+from flask import Flask, render_template, request, make_response, jsonify
 import sqlite3
 import datetime
 import io
-import database
 import os
+
+import database
+import excel
 
 from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
@@ -72,8 +74,52 @@ def meters(meterId=None):
 
         lat, lon = get_meter_coords(meterId)
         location = {'lat':lat, 'lon':lon}
-        return render_template('meter.html', meterId=meterId, tableReadings=tableReadings, location=location)
+        
+        settings_filename = os.path.abspath('settings/dbExample.json')
+        query_filename = os.path.abspath('sql/MonthlyReports.sql')
+        params_dict = {'METERID': meterId}
+        h, d = database.run_query(settings_filename, query_filename, params_dict)
+        reports = {'headings':h, 'data':d}
+        
+        return render_template('meter.html', meterId=meterId, tableReadings=tableReadings, location=location, reports=reports)
 
+
+@app.route('/reports/')
+@app.route('/reports/<meterId>', methods=['POST', 'GET'])
+def reports(meterId=None):
+    if meterId is None:
+        return 'Report API'
+    else:
+        if request.method == 'GET':
+            params = request.args.to_dict()
+        elif request.method == 'POST':
+            params = request.form.to_dict()
+        else:
+            params = {}
+        try:
+            sDate = params['sDate']
+            eDate = params['eDate']    
+        except KeyError:
+            return 'ERROR: URL must be in form meterNo?sDate=2014-06-01&eDate=2014-06-02'
+
+        settings_filename = os.path.abspath('settings/dbExample.json')
+        query_filename = os.path.abspath('sql/MeterReadings.sql')
+        params_dict = {'METERID': meterId, 'SDATE':sDate, 'EDATE':eDate}
+        hProfile, dProfile = database.run_query(settings_filename, query_filename, params_dict)
+
+        OnePhase = False
+        
+        settings_filename = os.path.abspath('settings/dbExample.json')
+        query_filename = os.path.abspath('sql/MeterEvents.sql')
+        params_dict = {'METERID': meterId, 'SDATE':sDate, 'EDATE':eDate}
+        hEvents, dEvents = database.run_query(settings_filename, query_filename, params_dict)
+        filePath = excel.create_excel_report(meterId, sDate, eDate, OnePhase, hProfile, dProfile, 
+                       hEvents, dEvents)
+                       
+        return render_template('report_download.html', filePath=filePath)
+                       
+                       
+                       
 def get_meter_list():
     settings_filename = os.path.abspath('settings/dbExample.json')
     query_filename = os.path.abspath('sql/ListMeters.sql')

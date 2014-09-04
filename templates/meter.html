@@ -20,6 +20,7 @@
             <ul class="nav nav-stacked">
               <li><a href="#details">Details</a></li>
               <li><a href="#location">Location</a></li>
+              <li><a href="#reports">Reports</a></li>
               <li><a href="#charts">Charts</a></li>
               <li><a href="#readings">Readings</a></li>
               <li><a href="#top" class="back-to-top">Back to top</a></li>
@@ -51,8 +52,26 @@
             .openPopup();
     </script>
 
+    <h1 id="reports" class="page-header">Reports</h1>
 
-    <h1 id="charts" class="page-header">Chart for Meter {{meterId}}</h1>
+    Monthly Reports:
+    
+    <ul>
+    {% for row in reports.data %}
+        <li>
+        {% for cell in row %}
+            {% if loop.index == 1 %}
+                <a href="{{ cell }}">   
+            {% else %}
+                {{ cell }}</a>
+            {% endif %}
+        {% endfor %} 
+        </li>
+    {% endfor %}
+    </ul> 
+        
+
+    <h1 id="charts" class="page-header">Chart for Meter </h1>
     
     <img src="../../charts/{{meterId}}.png" />
     

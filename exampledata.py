@@ -42,10 +42,10 @@ def create_example_db():
         row = [x, lat, lon]
         curs.execute(query, row)
 
-    # Create the meter data tables
-    query = 'CREATE TABLE READINGS (meter_id TEXT, measdate DATETIME, v1 REAL, v2 REAL, v3 REAL, PRIMARY KEY (meter_id, measdate));'
+    # Create the meter readings table
+    query = 'CREATE TABLE READINGS (meter_id TEXT, measdate DATETIME, v1 REAL, v2 REAL, v3 REAL, thd1 REAL, thd2 REAL, thd3 REAL, unbal REAL, PRIMARY KEY (meter_id, measdate));'
     curs.execute(query)
-    query = 'INSERT INTO READINGS (meter_id, measdate, v1, v2, v3) VALUES (?, ?, ?, ?, ?);'
+    query = 'INSERT INTO READINGS (meter_id, measdate, v1, v2, v3, thd1, thd2, thd3, unbal) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);'
     startDate = "2014-01-01 00:00:00"
     endDate = "2014-07-01 00:00:00"
     for x in range(1, 5):
@@ -56,17 +56,52 @@ def create_example_db():
             v1 = create_random_voltage()
             v2 = create_random_voltage()
             v3 = create_random_voltage()
-            row = [meterId, measdate, v1, v2, v3]
+            thd1 = create_random_thd()
+            thd2 = create_random_thd()
+            thd3 = create_random_thd()                        
+            unbal = calc_unbalance([v1,v2,v3])
+            row = [meterId, measdate, v1, v2, v3, thd1, thd2, thd3, unbal]
             try:
                 curs.execute(query, row)
             except sqlite3.Error as e:
                 pass # Random date wasn't random enough
+
+
+    # Create the meter events
+    query = 'CREATE TABLE EVENTS (meter_id TEXT, event_start DATETIME, event_end DATETIME, event_type REAL, amplitude REAL, duration REAL, phases TEXT, PRIMARY KEY (meter_id, event_start, event_type));'
+    curs.execute(query)
+    query = 'INSERT INTO EVENTS (meter_id, event_start, event_end, event_type, amplitude, duration, phases) VALUES (?, ?, ?, ?, ?, ?, ?);'
+    startDate = "2014-01-01 00:00:00"
+    endDate = "2014-07-01 00:00:00"
+    for x in range(1, 5):
+        meterId = x
+        for y in range(1,50):
+            dateFormat = '%Y-%m-%d %H:%M:%S'
+            # TODO Make the values actually line up with readings
+            event_start = strTimeProp(startDate, endDate, dateFormat, random.random())
+            event_end = strTimeProp(event_start, endDate, dateFormat, random.random())
+            event_type = 'SAG'
+            amplitude = 230.0
+            duration = 100.0
+            phases = 'ABC'
+            row = [meterId, event_start, event_end, event_type, amplitude, duration, phases]
+            try:
+                curs.execute(query, row)
+            except sqlite3.Error as e:
+                pass # Random date wasn't random enough
+
 
     conn.commit()
     conn.close()
 
     return True
 
+
+
+def calc_unbalance(a):
+    avg = sum(a, 0.0) / len(a)
+    max_dev = max(abs(el - avg) for el in a)
+    return (max_dev/avg)
 
 def create_random_coords():
     """ Creates a random lat lon combo
@@ -79,8 +114,13 @@ def create_random_coords():
 def create_random_voltage():
     """ Creates a random voltage between 230 and 250
     """
-    volt = 230.0 + ( 20 * random.random() )
-    return volt
+    return 230.0 + ( 20 * random.random() )
+
+    
+def create_random_thd():
+    """ Creates a random voltage between 230 and 250
+    """
+    return ( 20 * random.random() )
 
 
 def strTimeProp(start, end, format, prop):

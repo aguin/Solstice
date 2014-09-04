@@ -6,10 +6,11 @@ import datetime
 import xlsxwriter
 
 
-def create_excel_report(dest_filename,MeterType, TxId,sDate,eDate,hDetails, dDetails, hProfile, dProfile, 
-                       hEvents, dEvents, OnePhase):    
+def create_excel_report(meterId, sDate, eDate, OnePhase, hProfile, dProfile, 
+                       hEvents, dEvents):
     """ Creates the excel file
     """
+    dest_filename = 'static/reports/' + meterId + '_' + sDate + '_' + eDate + '.xlsx'
     workbook = xlsxwriter.Workbook(dest_filename)
     
     #-----------------
@@ -17,21 +18,11 @@ def create_excel_report(dest_filename,MeterType, TxId,sDate,eDate,hDetails, dDet
     #-----------------
     sDateObj = datetime.datetime.strptime(sDate, '%Y-%m-%d')
     eDateObj = datetime.datetime.strptime(eDate, '%Y-%m-%d')
-    cSiteName = ' for Tx.'+TxId
+    cSiteName = ' for '+ meterId
     date_format = workbook.add_format({'num_format': 'dd-mm-yy hh:mm'})
     fBU = workbook.add_format()
     fBU.set_bold()
     fBU.set_underline()
-
-    #-----------------
-    #Details
-    #-----------------
-    ws0 = workbook.add_worksheet('Details')
-    ws0.write('A2','SITE POWER QUALITY REPORT',fBU)
-    gTime = strftime("%Y-%m-%d %H:%M:%S", localtime())
-    ws0.write('A3','Report generated at '+gTime)
-    ws0 = dump_vertical_data(ws0,hDetails,dDetails,3)
-    ws0.set_column('A:A',25)
     
     #-----------------
     #Profile
@@ -58,9 +49,8 @@ def create_excel_report(dest_filename,MeterType, TxId,sDate,eDate,hDetails, dDet
     #-----------------
     #THD
     #-----------------
-    if MeterType == 'EDMI':
-        ws4 = workbook.add_worksheet('THD')
-        ws4 = create_histogram_THD(ws4,numProfileRows,OnePhase,fBU)
+    ws4 = workbook.add_worksheet('THD')
+    ws4 = create_histogram_THD(ws4,numProfileRows,OnePhase,fBU)
     
     #-----------------
     #U
@@ -83,10 +73,9 @@ def create_excel_report(dest_filename,MeterType, TxId,sDate,eDate,hDetails, dDet
     #-----------------
     #ProfileTHDG
     #-----------------
-    if MeterType == 'EDMI':
-        wsc2 = workbook.add_chartsheet('ProfileTHDG')
-        c2 = create_chart_scatter(workbook,'ProfileTHDG',cVars,OnePhase)
-        wsc2.set_chart(c2) #Place Chart
+    wsc2 = workbook.add_chartsheet('ProfileTHDG')
+    c2 = create_chart_scatter(workbook,'ProfileTHDG',cVars,OnePhase)
+    wsc2.set_chart(c2) #Place Chart
 
     #-----------------
     #ProfileUG
@@ -107,10 +96,9 @@ def create_excel_report(dest_filename,MeterType, TxId,sDate,eDate,hDetails, dDet
     #-----------------
     #THDG
     #-----------------
-    if MeterType == 'EDMI':
-        wsc5 = workbook.add_chartsheet('THDG')
-        c5 = create_chart_histogram(workbook,'THD','84','THD Frequency Distribution'+cSiteName,'THD (%)')
-        wsc5.set_chart(c5) #Place Chart
+    wsc5 = workbook.add_chartsheet('THDG')
+    c5 = create_chart_histogram(workbook,'THD','84','THD Frequency Distribution'+cSiteName,'THD (%)')
+    wsc5.set_chart(c5) #Place Chart
 
     #-----------------
     #UG
