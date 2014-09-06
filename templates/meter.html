@@ -31,6 +31,7 @@
                     <li><a href="#charts-volt"> - Voltage</a></li>
                     <li><a href="#charts-thd"> - THD</a></li>
                     <li><a href="#charts-unbal"> - Unbalance</a></li>                                        
+                    <li><a href="#charts-events"> - Events by Month</a></li>                    
                   </ul>
               </li>              
               <li><a href="#top" class="back-to-top">Back to top</a></li>
@@ -41,11 +42,10 @@
 
   <div class="col-md-10">
     <h1 id="details" class="page-header">Details</h1>
-    <p>Some stuff about the meter</p>
+    <p>Some details about the meter should go here.</p>
     
 
-
-		
+	
 
     <h1 id="location" class="page-header">Location</h1>
 
@@ -188,7 +188,35 @@
                                     })
         });       
     });
-    </script>          
+    </script>
+    
+    <!-- Flot code - load json into chart div-->
+    <script language="javascript" type="text/javascript">  
+    $(document).ready(function(){
+        $.getJSON("../../chartdata/{{meterId}}.json?cType=events", function(json) {
+           //success - data loaded, now use plot:
+           var plotarea = $("#placeholder4");
+           $.plot(
+           //plot area
+           plotarea,
+           //plot data
+             [
+				{ data: json.sag, label: "Sag" },				
+				{ data: json.swl, label: "Swell"}
+			],
+           // plot settings
+           {
+                                    grid: {},
+                                    yaxis: {label: "Events"}, 
+                                    xaxis: {mode: "time", 
+                                            timeformat: "%Y-%m-%d %H:%M",
+                                            minTickSize: [1, "month"]
+                                            }, 
+                                    clickable:true, hoverable: true
+                                    })
+        });       
+    });
+    </script>           
 
     <h2 id="charts-volt">Voltage</h2>
     <div class="chart-container">
@@ -203,7 +231,12 @@
     <h2 id="charts-unbal">Unbalance</h2>
     <div class="chart-container">
 	    <div id="placeholder3" class="chart-placeholder"></div>
-    </div>    
+    </div>
+    
+    <h2 id="charts-events">Number of Events By Month</h2>
+    <div class="chart-container">
+	    <div id="placeholder4" class="chart-placeholder"></div>
+    </div>         
     
     </div>
     

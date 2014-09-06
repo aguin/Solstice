@@ -75,13 +75,13 @@ def create_example_db():
     endDate = "2014-07-01 00:00:00"
     for x in range(1, 5):
         meterId = x
-        for y in range(1,500):
+        # TODO Make the event values actually line up with readings
+        for y in range(1,250):
             dateFormat = '%Y-%m-%d %H:%M:%S'
-            # TODO Make the values actually line up with readings
             event_start = strTimeProp(startDate, endDate, dateFormat, random.random())
             event_end = strTimeProp(event_start, endDate, dateFormat, random.random())
             event_type = 'SAG'
-            amplitude = 230.0
+            amplitude = 210.0
             duration = 100.0
             phases = 'ABC'
             row = [meterId, event_start, event_end, event_type, amplitude, duration, phases]
@@ -89,6 +89,19 @@ def create_example_db():
                 curs.execute(query, row)
             except sqlite3.Error as e:
                 pass # Random date wasn't random enough
+        for y in range(1,250):
+            dateFormat = '%Y-%m-%d %H:%M:%S'
+            event_start = strTimeProp(startDate, endDate, dateFormat, random.random())
+            event_end = strTimeProp(event_start, endDate, dateFormat, random.random())
+            event_type = 'SWL'
+            amplitude = 260.0
+            duration = 50.0
+            phases = 'ABC'
+            row = [meterId, event_start, event_end, event_type, amplitude, duration, phases]
+            try:
+                curs.execute(query, row)
+            except sqlite3.Error as e:
+                pass # Random date wasn't random enough                
 
 
     conn.commit()

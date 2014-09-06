@@ -90,7 +90,8 @@ def chartdata(meterId=None):
             flotData = getchartdata.get_thd_chart_data(meterId)
         elif cType == 'unbal':
             flotData = getchartdata.get_unbal_chart_data(meterId)            
-        
+        elif cType == 'events':
+            flotData = getchartdata.get_events_chart_data(meterId)        
         return jsonify(flotData)
     
 
