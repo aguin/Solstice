@@ -46,11 +46,11 @@ def create_example_db():
     query = 'CREATE TABLE READINGS (meter_id TEXT, measdate DATETIME, v1 REAL, v2 REAL, v3 REAL, thd1 REAL, thd2 REAL, thd3 REAL, unbal REAL, PRIMARY KEY (meter_id, measdate));'
     curs.execute(query)
     query = 'INSERT INTO READINGS (meter_id, measdate, v1, v2, v3, thd1, thd2, thd3, unbal) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);'
-    startDate = "2014-01-01 00:00:00"
+    startDate = "2012-01-01 00:00:00"
     endDate = "2014-07-01 00:00:00"
     for x in range(1, 5):
         meterId = x
-        for y in range(1,500):
+        for y in range(1,10000):
             dateFormat = '%Y-%m-%d %H:%M:%S'
             measdate = strTimeProp(startDate, endDate, dateFormat, random.random())
             v1 = create_random_voltage()
@@ -71,11 +71,11 @@ def create_example_db():
     query = 'CREATE TABLE EVENTS (meter_id TEXT, event_start DATETIME, event_end DATETIME, event_type REAL, amplitude REAL, duration REAL, phases TEXT, PRIMARY KEY (meter_id, event_start, event_type));'
     curs.execute(query)
     query = 'INSERT INTO EVENTS (meter_id, event_start, event_end, event_type, amplitude, duration, phases) VALUES (?, ?, ?, ?, ?, ?, ?);'
-    startDate = "2014-01-01 00:00:00"
+    startDate = "2012-01-01 00:00:00"
     endDate = "2014-07-01 00:00:00"
     for x in range(1, 5):
         meterId = x
-        for y in range(1,50):
+        for y in range(1,500):
             dateFormat = '%Y-%m-%d %H:%M:%S'
             # TODO Make the values actually line up with readings
             event_start = strTimeProp(startDate, endDate, dateFormat, random.random())

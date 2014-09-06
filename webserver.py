@@ -6,12 +6,7 @@ import os
 
 import database
 import excel
-
-from matplotlib import pyplot as plt
-from matplotlib.figure import Figure
-from matplotlib.dates import DateFormatter
-from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-
+import getchartdata
 
 app = Flask(__name__)
 
@@ -25,23 +20,6 @@ def index():
 def about():
     return render_template('about.html')
 
-
-@app.route('/charts/')    
-@app.route('/charts/<meterId>.png')
-def plot(meterId=None):
-    """ Create a chart
-    """
-    if meterId is None:
-        return 'This is a charting API... it does not work'
-    else:
-        fig = chart_meter_line(meterId)
-        canvas=FigureCanvas(fig)
-        png_output = io.BytesIO()
-        canvas.print_png(png_output)
-        response=make_response(png_output.getvalue())
-        response.headers['Content-Type'] = 'image/png'
-        
-        return response
 
 def chart_meter_line(meterId):
     h, d = get_meter_readings(meterId)
@@ -64,13 +42,13 @@ def chart_meter_line(meterId):
 @app.route('/meters/')
 @app.route('/meters/<meterId>/')
 def meters(meterId=None):
+    """ Generates the required data for the meters page
+    """
     if meterId is None:
         h, d = get_meter_list()
         tableMeterList = {'headings':h, 'data':d}
         return render_template('meters.html', tableMeterList=tableMeterList)
     else:
-        h, d = get_meter_readings(meterId)
-        tableReadings = {'headings':h, 'data':d}
 
         lat, lon = get_meter_coords(meterId)
         location = {'lat':lat, 'lon':lon}
@@ -81,12 +59,46 @@ def meters(meterId=None):
         h, d = database.run_query(settings_filename, query_filename, params_dict)
         reports = {'headings':h, 'data':d}
         
-        return render_template('meter.html', meterId=meterId, tableReadings=tableReadings, location=location, reports=reports)
+        settings_filename = os.path.abspath('settings/dbExample.json')
+        query_filename = os.path.abspath('sql/Last10Events.sql')
+        params_dict = {'METERID': meterId}
+        h, d = database.run_query(settings_filename, query_filename, params_dict)
+        tableLast10Events = {'headings':h, 'data':d}        
+        
+        return render_template('meter.html', meterId=meterId,
+                             tableLast10Events=tableLast10Events, 
+                             location=location, reports=reports)
 
+
+@app.route('/chartdata/')
+@app.route('/chartdata/<meterId>.json')
+def chartdata(meterId=None):
+    if meterId is None:
+        return 'json chart api'
+    else:
+        if request.method == 'GET':
+            params = request.args.to_dict()
+        elif request.method == 'POST':
+            params = request.form.to_dict()
+        else:
+            params = {}
+        
+        cType = params['cType']
+        if cType == 'volt':
+            flotData = getchartdata.get_voltage_chart_data(meterId)
+        elif cType == 'thd':
+            flotData = getchartdata.get_thd_chart_data(meterId)
+        elif cType == 'unbal':
+            flotData = getchartdata.get_unbal_chart_data(meterId)            
+        
+        return jsonify(flotData)
+    
 
 @app.route('/reports/')
 @app.route('/reports/<meterId>', methods=['POST', 'GET'])
 def reports(meterId=None):
+    """ Creates excel .xlsx reports for a given date range
+    """
     if meterId is None:
         return 'Report API'
     else:
@@ -128,13 +140,6 @@ def get_meter_list():
 
     return headings, rows
 
-def get_meter_readings(meterId):
-    settings_filename = os.path.abspath('settings/dbExample.json')
-    query_filename = os.path.abspath('sql/Last10Readings.sql')
-    params_dict = {'METERID': meterId}
-    headings, rows = database.run_query(settings_filename, query_filename, params_dict)
-
-    return headings, rows
 
 def get_meter_coords(meterId):
     dbPath = 'data/meters.db'

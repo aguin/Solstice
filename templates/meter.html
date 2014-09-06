@@ -3,6 +3,10 @@
 {% block title %}Solstice - Meter {{meterId}}{% endblock %}
 {% block container %}
 
+<!--[if lte IE 8]><script language="javascript" type="text/javascript" src="{{ url_for('static', filename='js/excanvas.min.js') }}"></script><![endif]-->
+<script src="{{ url_for('static', filename='js/jquery.flot.js') }}"></script>
+<script src="{{ url_for('static', filename='js/jquery.flot.time.js') }}"></script>
+	
 <div class="row">
   <div class="col-md-2">
   
@@ -17,12 +21,18 @@
       })
       </script>
       <div class="nav affix">
-            <ul class="nav nav-stacked">
+            <ul class="nav nav-list bs-docs-sidenav">
               <li><a href="#details">Details</a></li>
               <li><a href="#location">Location</a></li>
               <li><a href="#reports">Reports</a></li>
-              <li><a href="#charts">Charts</a></li>
-              <li><a href="#readings">Readings</a></li>
+              <li><a href="#events">Events</a></li>
+              <li><a href="#charts">Charts</a>
+                  <ul class="nav nav-list">
+                    <li><a href="#charts-volt"> - Voltage</a></li>
+                    <li><a href="#charts-thd"> - THD</a></li>
+                    <li><a href="#charts-unbal"> - Unbalance</a></li>                                        
+                  </ul>
+              </li>              
               <li><a href="#top" class="back-to-top">Back to top</a></li>
             </ul>
             
@@ -30,8 +40,12 @@
   </div><!-- /col-md-2-->
 
   <div class="col-md-10">
-    <h1 id="details" class="page-header">Meter Details</h1>
+    <h1 id="details" class="page-header">Details</h1>
     <p>Some stuff about the meter</p>
+    
+
+
+		
 
     <h1 id="location" class="page-header">Location</h1>
 
@@ -52,37 +66,32 @@
             .openPopup();
     </script>
 
-    <h1 id="reports" class="page-header">Reports</h1>
-
-    Monthly Reports:
-    
-    <ul>
-    {% for row in reports.data %}
-        <li>
-        {% for cell in row %}
-            {% if loop.index == 1 %}
-                <a href="{{ cell }}">   
-            {% else %}
-                {{ cell }}</a>
-            {% endif %}
-        {% endfor %} 
-        </li>
-    {% endfor %}
-    </ul> 
+    <h1 id="reports" class="page-header">Monthly Reports</h1>
+       <div class="row">
+        {% for row in reports.data %}
+            <div class="col-md-1">
+            {% for cell in row %}
+                {% if loop.index == 1 %}
+                    <a href="{{ cell }}"><button type="button" class="btn btn-default">  
+                {% else %}
+                    {{ cell }}</button></a>
+                {% endif %}
+            {% endfor %} 
+            </div>
+        {% endfor %}
+        </div><!-- /row--> 
         
 
-    <h1 id="charts" class="page-header">Chart for Meter </h1>
+
     
-    <img src="../../charts/{{meterId}}.png" />
-    
-    <h1 id="readings" class="page-header">Last 10 Recordings for Meter {{meterId}}</h1>
+    <h1 id="events" class="page-header">Last 10 Events</h1>
 
     <table class="table table-condensed table-striped">
      <thead>
-        <tr>{% for cell in tableReadings.headings %}<th>{{ cell }}</th>{% endfor %}</tr>
+        <tr>{% for cell in tableLast10Events.headings %}<th>{{ cell }}</th>{% endfor %}</tr>
      </thead>
      <tbody>
-        {% for row in tableReadings.data %}<tr>
+        {% for row in tableLast10Events.data %}<tr>
             {% for cell in row %}
                 <td>{{ cell }}</td>    
             {% endfor %} 
@@ -91,6 +100,113 @@
      </tbody>
     </table>
 
+    
+    
+    
+    <h1 id="charts" class="page-header">Charts</h1>
+
+    <!-- Flot code - load json into chart div-->
+    <script language="javascript" type="text/javascript">  
+    $(document).ready(function(){
+        $.getJSON("../../chartdata/{{meterId}}.json?cType=volt", function(json) {
+           //success - data loaded, now use plot:
+           var plotarea = $("#placeholder1");
+           $.plot(
+           //plot area
+           plotarea,
+           //plot data
+             [
+				{ data: json.a, label: "A" },
+				{ data: json.b, label: "B" },
+				{ data: json.c, label: "C" },				
+			],
+           // plot settings
+           {
+                                    grid: {},
+                                    yaxis: {label: "Voltage"}, 
+                                    xaxis: {mode: "time", 
+                                            timeformat: "%Y-%m-%d %H:%M",
+                                            minTickSize: [30, "minute"]
+                                            }, 
+                                    clickable:true, hoverable: true
+                                    })
+        });       
+    });
+    </script> 
+
+    <!-- Flot code - load json into chart div-->
+    <script language="javascript" type="text/javascript">  
+    $(document).ready(function(){
+        $.getJSON("../../chartdata/{{meterId}}.json?cType=thd", function(json) {
+           //success - data loaded, now use plot:
+           var plotarea = $("#placeholder2");
+           $.plot(
+           //plot area
+           plotarea,
+           //plot data
+             [
+				{ data: json.a, label: "A" },
+				{ data: json.b, label: "B" },
+				{ data: json.c, label: "C" },				
+			],
+           // plot settings
+           {
+                                    grid: {},
+                                    yaxis: {label: "THD"}, 
+                                    xaxis: {mode: "time", 
+                                            timeformat: "%Y-%m-%d %H:%M",
+                                            minTickSize: [30, "minute"]
+                                            }, 
+                                    clickable:true, hoverable: true
+                                    })
+        });       
+    });
+    </script> 
+    
+    <!-- Flot code - load json into chart div-->
+    <script language="javascript" type="text/javascript">  
+    $(document).ready(function(){
+        $.getJSON("../../chartdata/{{meterId}}.json?cType=unbal", function(json) {
+           //success - data loaded, now use plot:
+           var plotarea = $("#placeholder3");
+           $.plot(
+           //plot area
+           plotarea,
+           //plot data
+             [
+				{ data: json.a, label: "Unbalance" }				
+			],
+           // plot settings
+           {
+                                    grid: {},
+                                    yaxis: {label: "Unbalance"}, 
+                                    xaxis: {mode: "time", 
+                                            timeformat: "%Y-%m-%d %H:%M",
+                                            minTickSize: [30, "minute"]
+                                            }, 
+                                    clickable:true, hoverable: true
+                                    })
+        });       
+    });
+    </script>          
+
+    <h2 id="charts-volt">Voltage</h2>
+    <div class="chart-container">
+	    <div id="placeholder1" class="chart-placeholder"></div>
     </div>
+    
+    <h2 id="charts-thd">THD</h2>
+    <div class="chart-container">
+	    <div id="placeholder2" class="chart-placeholder"></div>
+    </div>    
+
+    <h2 id="charts-unbal">Unbalance</h2>
+    <div class="chart-container">
+	    <div id="placeholder3" class="chart-placeholder"></div>
+    </div>    
+    
+    </div>
+    
+        
 </div>  
 {% endblock container%}
