@@ -3,9 +3,7 @@
 {% block title %}Solstice - Meter {{meterId}}{% endblock %}
 {% block container %}
 
-<!--[if lte IE 8]><script language="javascript" type="text/javascript" src="{{ url_for('static', filename='js/excanvas.min.js') }}"></script><![endif]-->
-<script src="{{ url_for('static', filename='js/jquery.flot.js') }}"></script>
-<script src="{{ url_for('static', filename='js/jquery.flot.time.js') }}"></script>
+
 	
 <div class="row">
   <div class="col-md-2">
@@ -49,8 +47,8 @@
 
     <h1 id="location" class="page-header">Location</h1>
 
-    <script src="{{ url_for('static', filename='js/leaflet.js') }}"></script>
     <div id="map1" class="map" style="width: 600px; height: 300px"></div>
+    <script src="https://unpkg.com/leaflet@0.7.7/dist/leaflet.js"></script>
     <script>
         // create map object
         var map = L.map('map1').setView([{{ location.lat }}, {{ location.lon }}], 8);
@@ -104,6 +102,9 @@
     
     
     <h1 id="charts" class="page-header">Charts</h1>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.time.min.js"></script>
 
     <!-- Flot code - load json into chart div-->
     <script language="javascript" type="text/javascript">  

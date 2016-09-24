@@ -2,5 +2,6 @@ __pycache__
 *~
 *.pyc
 *.fuse*
+.idea/*
 data/
 static/reports/*
