@@ -1,7 +1,4 @@
-#!/usr/bin/env python3
-
-from __future__ import print_function
-from time import strftime, localtime
+import os
 import datetime
 import xlsxwriter
 
@@ -10,7 +7,10 @@ def create_excel_report(meterId, sDate, eDate, OnePhase, hProfile, dProfile,
                        hEvents, dEvents):
     """ Creates the excel file
     """
-    dest_filename = 'static/reports/' + meterId + '_' + sDate + '_' + eDate + '.xlsx'
+    dest_path = 'static/reports/'
+    if not os.path.exists(dest_path):
+        os.makedirs(dest_path)
+    dest_filename = dest_path + meterId + '_' + sDate + '_' + eDate + '.xlsx'
     workbook = xlsxwriter.Workbook(dest_filename)
     
     #-----------------
